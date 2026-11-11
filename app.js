@@ -336,7 +336,7 @@
     info.hosts.forEach(function (h) { var n = detectProvider(h); if (n && providers.indexOf(n) < 0) providers.push(n); });
     var pv = el('p', 'provider');
     if (providers.length) { pv.append('Detected DNS provider: '); pv.append(el('strong', null, providers.join(', '))); }
-    else pv.append('DNS provider: not recognised from the nameserver names.');
+    else pv.append('DNS provider: not recognized from the nameserver names.');
     state.append(pv);
     box.append(state);
 
