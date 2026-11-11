@@ -1,0 +1,8 @@
+# Delegation Checker
+
+> Free, single-page tool to inspect how a domain is delegated in DNS: NS records, nameserver addresses and diversity, SOA timers and serial, DNSSEC status and DNS provider.
+
+Static site (no backend, no build step, no dependencies) at https://delegation.hbenali.ovh. Looks up NS, SOA, DS and DNSKEY via DNS-over-HTTPS (dns.google, cross-checked with cloudflare-dns.com), resolves each nameserver (A/AAAA), and flags too few nameservers, shared networks, missing IPv6, CNAME or IP-literal nameservers, odd SOA timers and DNSSEC problems. A browser cannot query authoritative servers, so lame delegation, parent-versus-child NS and per-server SOA serials are not checked. Use `?domain=example.com` to run a lookup.
+
+## Pages
+- [Delegation Checker](https://delegation.hbenali.ovh/): the tool itself.

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delegation Checker — DNS NS, SOA and DNSSEC Inspector</title>
+  <meta name="description" content="Free DNS delegation checker. See a domain's NS records, whether the nameservers resolve and sit on different networks, the SOA timers and serial, the DNSSEC status and the DNS provider.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://delegation.hbenali.ovh/">
+
+  <!-- Security (static hosting: no custom HTTP headers, so CSP/referrer are set here; X-Frame-Options/X-Content-Type-Options need a real header and aren't achievable via meta) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src https://dns.google https://cloudflare-dns.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Delegation Checker — DNS NS, SOA and DNSSEC Inspector">
+  <meta property="og:description" content="Inspect a domain's NS records, nameserver diversity, SOA timers and DNSSEC status.">
+  <meta property="og:url" content="https://delegation.hbenali.ovh/">
+  <meta property="og:site_name" content="Delegation Checker">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://delegation.hbenali.ovh/favicon.svg">
+  <meta property="og:image:type" content="image/svg+xml">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Delegation Checker — DNS NS, SOA and DNSSEC Inspector">
+  <meta name="twitter:description" content="Inspect a domain's NS records, nameserver diversity, SOA timers and DNSSEC status.">
+  <meta name="twitter:image" content="https://delegation.hbenali.ovh/favicon.svg">
+
+  <!-- SVG Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0c1218" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f4efe4" media="(prefers-color-scheme: light)">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Delegation Checker">
+
+  <!-- the DoH resolvers are only hit on-demand after a lookup -->
+  <link rel="dns-prefetch" href="https://dns.google">
+  <link rel="dns-prefetch" href="https://cloudflare-dns.com">
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "url": "https://delegation.hbenali.ovh/",
+        "name": "Delegation Checker",
+        "description": "Free DNS delegation checker: NS, SOA and DNSSEC.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://delegation.hbenali.ovh/?domain={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "WebApplication",
+        "name": "Delegation Checker",
+        "url": "https://delegation.hbenali.ovh/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any",
+        "description": "Check how a domain is delegated: NS records, nameserver addresses, SOA timers and serial, DNSSEC and DNS provider.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    ]
+  }
+  </script>
+
+
+  <link rel="preload" href="/fonts/big-shoulders-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/newsreader-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/site.css">
+</head>
+
+<body>
+<a class="skip" href="#domainInput">Skip to the tool</a>
+<header class="hero">
+  <div class="wrap">
+    <h1 class="display">
+      <span class="line"><span>Delegation</span></span>
+      <span class="line"><span>NS, SOA &amp; DNSSEC</span></span>
+    </h1>
+    <p class="lead">See how a domain is <strong>delegated</strong>: nameservers, their networks, the SOA timers and whether the zone is signed.</p>
+  </div>
+</header>
+
+<main>
+  <section class="block wrap" aria-labelledby="lookupTitle">
+    <h2 class="block-title" id="lookupTitle">Check a domain's delegation</h2>
+
+    <div class="field input-group">
+      <label for="domainInput">
+        <span>Domain name</span>
+        <i>example.com</i>
+      </label>
+      <div class="field-row domain-input-wrapper">
+        <input type="text" id="domainInput" placeholder="e.g. example.com" value="example.com" spellcheck="false" autocomplete="off">
+        <button class="btn" id="checkBtn">
+          <span id="btnText">Check delegation</span>
+          <span id="btnLoader" hidden></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="result-area" id="resultContainer" aria-live="polite">
+      <div class="state empty empty-state" id="placeholderState">
+        <p>Enter a domain and click "Check delegation".<br>The NS records say which servers are authoritative for the zone; the SOA and DNSSEC data describe how it is run.</p>
+      </div>
+      <div id="recordsContainer" hidden></div>
+      <div id="errorContainer" hidden></div>
+    </div>
+  </section>
+
+  <section class="block wrap" aria-labelledby="limitsTitle">
+    <h2 class="block-title" id="limitsTitle">What this tool cannot see</h2>
+    <p class="block-note">A web page cannot open raw UDP or TCP connections, so it can only ask recursive resolvers over HTTPS (DNS-over-HTTPS). It never talks to the authoritative servers itself. That means:</p>
+    <ul class="limits">
+      <li><strong>No lame-delegation test.</strong> Whether each listed nameserver actually answers authoritatively for the zone is not verified.</li>
+      <li><strong>No parent-versus-child NS comparison.</strong> A resolver returns one merged NS set; the parent's delegation (and glue) and the child zone's own NS records cannot be told apart.</li>
+      <li><strong>No per-server SOA serial comparison.</strong> Only the serial that the resolvers saw is shown, not the serial of each nameserver.</li>
+    </ul>
+    <p class="block-note">What is done instead: the same NS, SOA and DS questions go to two independent resolvers, <code>dns.google</code> and <code>cloudflare-dns.com</code> (both allow cross-origin requests). If they agree, they see the same data at this moment. If they differ, the cause is either cache age or authoritative servers that disagree; it cannot tell which, and agreement does not prove every nameserver is healthy. For a full lame-delegation test run a tool such as <code>dig +trace</code> or <code>delv</code> from a machine with direct DNS access.</p>
+  </section>
+</main>
+
+<div class="foot">
+  <footer>
+    <span>using <strong>Google DNS over HTTPS</strong></span>
+    <span>NS, SOA and DNSSEC inspection</span>
+    <a href="https://hbenali.ovh" target="_blank" rel="noopener noreferrer">hbenali.ovh</a>
+  </footer>
+</div>
+
+<script src="/app.js" defer></script>
+</body>
+</html>
